@@ -46,45 +46,45 @@ class KnolEntity extends PersistentEntity {
     * is a function of the current state to a set of actions.
     */
   override def behavior: Behavior = {
-  case KnolState(message, _) => Actions().onCommand[UseGreetingMessage, Done] {
+    case KnolState(message, _) => Actions().onCommand[UseGreetingMessage, Done] {
 
-  // Command handler for the UseGreetingMessage command
-  case (UseGreetingMessage(newMessage), ctx, state) =>
-  // In response to this command, we want to first persist it as a
-  // GreetingMessageChanged event
-  ctx.thenPersist(
-  GreetingMessageChanged(newMessage)
-  ) { _ =>
-  // Then once the event is successfully persisted, we respond with done.
-  ctx.reply(Done)
+      // Command handler for the UseGreetingMessage command
+      case (UseGreetingMessage(newMessage), ctx, state) =>
+        // In response to this command, we want to first persist it as a
+        // GreetingMessageChanged event
+        ctx.thenPersist(
+          GreetingMessageChanged(newMessage)
+        ) { _ =>
+          // Then once the event is successfully persisted, we respond with done.
+          ctx.reply(Done)
+        }
+
+    }.onReadOnlyCommand[Hello, String] {
+
+      // Command handler for the Hello command
+      case (Hello(name), ctx, state) =>
+        // Reply with a message built from the current message, and the name of
+        // the person we're meant to say hello to.
+        ctx.reply(s"\$message, \$name!")
+
+    }.onEvent {
+
+      // Event handler for the GreetingMessageChanged event
+      case (GreetingMessageChanged(newMessage), state) =>
+        // We simply update the current state to use the greeting message from
+        // the event.
+        KnolState(newMessage, LocalDateTime.now().toString)
+
+    }
+  }
 }
 
-}.onReadOnlyCommand[Hello, String] {
+/**
+  * The current state held by the persistent entity.
+  */
+case class KnolState(message: String, timestamp: String)
 
-  // Command handler for the Hello command
-  case (Hello(name), ctx, state) =>
-  // Reply with a message built from the current message, and the name of
-  // the person we're meant to say hello to.
-  ctx.reply(s"\$message, \$name!")
-
-}.onEvent {
-
-  // Event handler for the GreetingMessageChanged event
-  case (GreetingMessageChanged(newMessage), state) =>
-  // We simply update the current state to use the greeting message from
-  // the event.
-  KnolState(newMessage, LocalDateTime.now().toString)
-
-}
-}
-}
-
-  /**
-    * The current state held by the persistent entity.
-    */
-  case class KnolState(message: String, timestamp: String)
-
-  object KnolState {
+object KnolState {
   /**
     * Format for the hello state.
     *
@@ -97,96 +97,96 @@ class KnolEntity extends PersistentEntity {
   implicit val format: Format[KnolState] = Json.format
 }
 
-  /**
-    * This interface defines all the events that the KnolEntity supports.
-    */
-  sealed trait KnolEvent extends AggregateEvent[KnolEvent] {
+/**
+  * This interface defines all the events that the KnolEntity supports.
+  */
+sealed trait KnolEvent extends AggregateEvent[KnolEvent] {
   def aggregateTag = KnolEvent.Tag
 }
 
-  object KnolEvent {
+object KnolEvent {
   val Tag = AggregateEventTag[KnolEvent]
 }
 
-  /**
-    * An event that represents a change in greeting message.
-    */
-  case class GreetingMessageChanged(message: String) extends KnolEvent
+/**
+  * An event that represents a change in greeting message.
+  */
+case class GreetingMessageChanged(message: String) extends KnolEvent
 
-  object GreetingMessageChanged {
-
-    /**
-      * Format for the greeting message changed event.
-      *
-      * Events get stored and loaded from the database, hence a JSON format
-      * needs to be declared so that they can be serialized and deserialized.
-      */
-    implicit val format: Format[GreetingMessageChanged] = Json.format
-  }
+object GreetingMessageChanged {
 
   /**
-    * This interface defines all the commands that the HelloWorld entity supports.
-    */
-  sealed trait KnolCommand[R] extends ReplyType[R]
-
-  /**
-    * A command to switch the greeting message.
+    * Format for the greeting message changed event.
     *
-    * It has a reply type of [[Done]], which is sent back to the caller
-    * when all the events emitted by this command are successfully persisted.
+    * Events get stored and loaded from the database, hence a JSON format
+    * needs to be declared so that they can be serialized and deserialized.
     */
-  case class UseGreetingMessage(message: String) extends KnolCommand[Done]
+  implicit val format: Format[GreetingMessageChanged] = Json.format
+}
 
-  object UseGreetingMessage {
+/**
+  * This interface defines all the commands that the HelloWorld entity supports.
+  */
+sealed trait KnolCommand[R] extends ReplyType[R]
 
-    /**
-      * Format for the use greeting message command.
-      *
-      * Persistent entities get sharded across the cluster. This means commands
-      * may be sent over the network to the node where the entity lives if the
-      * entity is not on the same node that the command was issued from. To do
-      * that, a JSON format needs to be declared so the command can be serialized
-      * and deserialized.
-      */
-    implicit val format: Format[UseGreetingMessage] = Json.format
-  }
+/**
+  * A command to switch the greeting message.
+  *
+  * It has a reply type of [[Done]], which is sent back to the caller
+  * when all the events emitted by this command are successfully persisted.
+  */
+case class UseGreetingMessage(message: String) extends KnolCommand[Done]
+
+object UseGreetingMessage {
 
   /**
-    * A command to say hello to someone using the current greeting message.
+    * Format for the use greeting message command.
     *
-    * The reply type is String, and will contain the message to say to that
-    * person.
+    * Persistent entities get sharded across the cluster. This means commands
+    * may be sent over the network to the node where the entity lives if the
+    * entity is not on the same node that the command was issued from. To do
+    * that, a JSON format needs to be declared so the command can be serialized
+    * and deserialized.
     */
-  case class Hello(name: String) extends KnolCommand[String]
+  implicit val format: Format[UseGreetingMessage] = Json.format
+}
 
-  object Hello {
+/**
+  * A command to say hello to someone using the current greeting message.
+  *
+  * The reply type is String, and will contain the message to say to that
+  * person.
+  */
+case class Hello(name: String) extends KnolCommand[String]
 
-    /**
-      * Format for the hello command.
-      *
-      * Persistent entities get sharded across the cluster. This means commands
-      * may be sent over the network to the node where the entity lives if the
-      * entity is not on the same node that the command was issued from. To do
-      * that, a JSON format needs to be declared so the command can be serialized
-      * and deserialized.
-      */
-    implicit val format: Format[Hello] = Json.format
-  }
+object Hello {
 
   /**
-    * Akka serialization, used by both persistence and remoting, needs to have
-    * serializers registered for every type serialized or deserialized. While it's
-    * possible to use any serializer you want for Akka messages, out of the box
-    * Lagom provides support for JSON, via this registry abstraction.
+    * Format for the hello command.
     *
-    * The serializers are registered here, and then provided to Lagom in the
-    * application loader.
+    * Persistent entities get sharded across the cluster. This means commands
+    * may be sent over the network to the node where the entity lives if the
+    * entity is not on the same node that the command was issued from. To do
+    * that, a JSON format needs to be declared so the command can be serialized
+    * and deserialized.
     */
-  object KnolSerializerRegistry extends JsonSerializerRegistry {
+  implicit val format: Format[Hello] = Json.format
+}
+
+/**
+  * Akka serialization, used by both persistence and remoting, needs to have
+  * serializers registered for every type serialized or deserialized. While it's
+  * possible to use any serializer you want for Akka messages, out of the box
+  * Lagom provides support for JSON, via this registry abstraction.
+  *
+  * The serializers are registered here, and then provided to Lagom in the
+  * application loader.
+  */
+object KnolSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
-  JsonSerializer[UseGreetingMessage],
-  JsonSerializer[Hello],
-  JsonSerializer[GreetingMessageChanged],
-  JsonSerializer[KnolState]
+    JsonSerializer[UseGreetingMessage],
+    JsonSerializer[Hello],
+    JsonSerializer[GreetingMessageChanged],
+    JsonSerializer[KnolState]
   )
 }

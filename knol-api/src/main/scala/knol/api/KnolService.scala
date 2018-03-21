@@ -9,7 +9,7 @@ import play.api.libs.json.{Format, Json}
 /**
   * Copyright Knoldus, Inc. 2018. All rights reserved.
   */
-object KnolApiService  {
+object KnolService  {
   val TOPIC_NAME = "greetings"
 }
 
@@ -19,7 +19,7 @@ object KnolApiService  {
   * This describes everything that Lagom needs to know about how to serve and
   * consume the KnolApiService.
   */
-trait KnolApiService extends Service {
+trait KnolService extends Service {
 
   /**
     * Example: curl http://localhost:9000/api/hello/Alice
@@ -46,7 +46,7 @@ trait KnolApiService extends Service {
         pathCall("/api/hello/:id", useGreeting _)
       )
       .withTopics(
-        topic(KnolApiService.TOPIC_NAME, greetingsTopic)
+        topic(KnolService.TOPIC_NAME, greetingsTopic)
           // Kafka partitions messages, messages within the same partition will
           // be delivered in order, to ensure that all messages for the same user
           // go to the same partition (and hence are delivered in order with respect
