@@ -9,7 +9,7 @@ import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceCall}
   * The knol stream interface.
   *
   * This describes everything that Lagom needs to know about how to serve and
-  * consume the $name;format="Camel"$Stream service.
+  * consume the KnolStream service.
   */
 trait KnolStreamService extends Service {
 
