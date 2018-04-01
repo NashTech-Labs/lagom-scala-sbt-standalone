@@ -62,10 +62,10 @@ class KnolEntity extends PersistentEntity {
     }.onReadOnlyCommand[Hello, String] {
 
       // Command handler for the Hello command
-      case (Hello(name), ctx, state) =>
+      case (Hello(name), ctx, _) =>
         // Reply with a message built from the current message, and the name of
         // the person we're meant to say hello to.
-        ctx.reply(s"\$message, \$name!")
+        ctx.reply(s"$message, $name!")
 
     }.onEvent {
 

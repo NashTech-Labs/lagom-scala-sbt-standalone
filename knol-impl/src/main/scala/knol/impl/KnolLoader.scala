@@ -38,6 +38,6 @@ abstract class KnolApplication(context: LagomApplicationContext)
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = KnolSerializerRegistry
 
-  // Register the $name$ persistent entity
+  // Register the knol persistent entity
   persistentEntityRegistry.register(wire[KnolEntity])
 }

@@ -15,7 +15,7 @@ import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentE
 class KnolServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extends KnolService {
 
   override def hello(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
-    // Look up the $name$ entity for the given ID.
+    // Look up the knol entity for the given ID.
     val ref = persistentEntityRegistry.refFor[KnolEntity](id)
 
     // Ask the entity the Hello command.
@@ -23,7 +23,7 @@ class KnolServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extend
   }
 
   override def useGreeting(id: String): ServiceCall[GreetingMessage, Done] = ServiceCall { request =>
-    // Look up the $name$ entity for the given ID.
+    // Look up the knol entity for the given ID.
     val ref = persistentEntityRegistry.refFor[KnolEntity](id)
 
     // Tell the entity to use the greeting message specified.

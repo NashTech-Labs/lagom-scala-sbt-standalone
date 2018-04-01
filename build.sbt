@@ -47,3 +47,6 @@ lazy val `knol-stream-impl` = (project in file("knol-stream-impl"))
     )
   )
   .dependsOn(`knol-stream-api`, `knol-api`)
+
+lagomKafkaEnabled in ThisBuild := false
+lagomCassandraEnabled in ThisBuild := false
