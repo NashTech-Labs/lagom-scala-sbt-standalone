@@ -26,7 +26,7 @@ To test this:
       5. `export PLAY_SECRET=none`
       6. `export CONFIG_FILE=/path/to/lagom-scala-sbt-standalone/knol-impl/src/main/resources/application.conf`
       7. `export CONFIG="-Dplay.crypto.secret=$PLAY_SECRET -Dlagom.cluster.join-self=off -Dorg.xerial.snappy.use.systemlib=true -Dconfig.file=$CONFIG_FILE"`
-    8. `export PLAY_SERVER_START="play.core.server.ProdServerStart"`
+      8. `export PLAY_SERVER_START="play.core.server.ProdServerStart"`
  12. At last run the Lagom service - `java -cp "$APP_CLASSPATH" $JAVA_OPTS $JMX_CONFIG $CONFIG $PLAY_SERVER_START`
 
 This runs each of the services as single-node clusters.
